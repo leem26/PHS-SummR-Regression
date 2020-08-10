@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>PHS Summer Camp 2020</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Matthew Lee   Harvard University" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# <em>PHS Summer Camp 2020</em>
+## Relationships and Regression
+### Matthew Lee <br><br>Harvard University
+
+---
+
+
+
+
+
+
+&lt;!--------------------------------------&gt;
+&lt;!-- REVIEW                           --&gt;
+&lt;!--------------------------------------&gt;
+# review
+
+So far this week, we've discussed the idea of **random variables** and their properties including:
+  - Expected values  `\(\rightarrow\mathbb{E}(X)\)`
+  - Variance `\(\rightarrow\text{Var}(X)\)`
+  - Probability distributions, like the *Binomial distribution* for a discrete variable or *Normal distribution* for one that's continuous. 
+
+&lt;br&gt;
+But **why** do we actually care about these things? Why do we even need to worry about crazy expressions like the one below?
+&lt;br&gt;
+`$$f(x)=\frac{1}{\sigma\sqrt{2\pi}}\exp\left\{-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2\right\}$$`
+
+
+&lt;font size="3"&gt;i.e. the PDF of a normal distribution, &lt;b&gt;please&lt;/b&gt; don't actually memorize this -- it's on Wikipedia&lt;/font&gt;
+
+---
+
+&lt;!--------------------------------------&gt;
+&lt;!-- A data generating world          --&gt;
+&lt;!--------------------------------------&gt;
+
+# a data generating world
+
+Ultimately, we're interested in these concepts because we can think of these distributions of random variables as an **approximation** of the world we live in -- and of the processes we wish to understand. In Public Health we might think of:
+  - The number of events that occur in a given period of time (such as the number of hospitalizations per week) as a **Poisson** process.&lt;sup&gt;[1](https://onlinelibrary.wiley.com/doi/abs/10.1002/nur.20093)&lt;/sup&gt;
+  - Whether or not someone experiences pre-term birth as a **Binomial/Bernoulli** process.&lt;sup&gt;[2](https://www.sciencedirect.com/science/article/abs/pii/0002937895902872)&lt;/sup&gt;  
+
+--
+  - From your favorite field of interest, what's another example of a **random variable** and what sort of distribution could it be represented by?
+
+.center[
+![:scale 20%](https://media.giphy.com/media/lgIFfKLRcR8I0/giphy.gif)![:scale 20%](https://media.giphy.com/media/lgIFfKLRcR8I0/giphy.gif)![:scale 20%](https://media.giphy.com/media/lgIFfKLRcR8I0/giphy.gif)
+]
+
+---
+
+&lt;!--------------------------------------&gt;
+&lt;!-- A data generating world 2        --&gt;
+&lt;!--------------------------------------&gt;
+
+# a data generating world
+
+More often than not, we as public health researchers want to describe the relationship between *two or more* random variables. For example: 
+
+&lt;br&gt;
+&lt;br&gt;
+- What is the relationship between **income** and **health**?
+- Are people who **smoke** more likely to develop **lung cancer**?
+- Is increased **air pollution** associated with **excess mortality** in children?
+- Does exposure to a **sugary beverages tax** decrease risk of **obesity**?
+
+
+
+---
+class: inverse
+&lt;!--------------------------------------&gt;
+&lt;!-- PLAN FOR TODAY                   --&gt;
+&lt;!--------------------------------------&gt;
+
+# the plan for today
+
+.large[
+1. Introduce the F&amp;Uuml;N Study
+
+1. Relationships between variables
+
+1. Intro to linear regression
+1. Wrapping up + conclusions
+]
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- PLAN FOR TODAY 2                 --&gt;
+&lt;!--------------------------------------&gt;
+
+# the plan for today
+
+We will use `R` to explore different ways to assess relationships between variables. Interactive exercises can be found on the website below, but feel free to work on your own computer if you'd like.
+
+.center[
+[https://phs-summr2020.netlify.app/](https://phs-summr2020.netlify.app/)
+]
+
+&lt;br&gt;
+This material is meant to introduce or refresh your memory of certain concepts, but it is **totally ok** if you don't understand everything: we will be returning to much of this over the course of the Fall semester.
+
+--
+
+&lt;br&gt;
+*Questions:* If you have a question, feel free to type it into the Zoom chatbox and we'll return to it at various points in the presentation. You can always email me (**mlee8@g.harvard.edu**) or any of the other TF's if you think of something later on. 
+
+---
+class: inverse
+&lt;!--------------------------------------&gt;
+&lt;!-- PLAN FOR TODAY                   --&gt;
+&lt;!--------------------------------------&gt;
+
+# the plan for today
+
+.large[
+1. .largebinv[Introduce the F&amp;Uuml;N Study]
+
+1. Relationships between variables
+
+1. Intro to linear regression
+1. Wrapping up + conclusions
+]
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- The FUN Study                    --&gt;
+&lt;!--------------------------------------&gt;
+
+# the F&amp;Uuml;N study
+
+To build our intuition of ideas, let's look at a silly made-up dataset from the **F**ollow-up of **&amp;Uuml;**ber-cool Stude**N**ts (FUN). As part of the study, 10,000 doctoral students pursuing health-related degrees were asked to provide information on:
+
+- `W`:  Whether the student is currently in their "dissertating" phase
+- `A.con`: \# hours student slept last night
+- `A.bin`: Whether student slept at least 8 hours (yes/no)
+- `Y.con`: \# times student used a food delivery service (FDS) last week
+- `Y.bin`: Whether FDS comprised ≥50% of the week's meals (yes/no)
+
+&lt;br&gt;
+A note: our outcome `Y.con` is continuous, rather than discrete, to take into account fractions of meals a student ate (e.g. snacks, second breakfasts)
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- The FUN Study 2                  --&gt;
+&lt;!--------------------------------------&gt;
+
+# the F&amp;Uuml;N study
+
+Suppose that we actually know the **true** relationships between these variables and how they were generated in the population. Specifically:
+
+&lt;br&gt;
+&lt;img src="slides_files/figure-html/unnamed-chunk-1-1.png" style="display: block; margin: auto;" /&gt;
+
+That is, student sleep hours and FDS use is affected by whether a student is writing their dissertation, but student sleep itself **does not** cause FDS use. We'll come back to this when we talk about **confounding** and regression. 
+
+&lt;br&gt;
+&lt;sup&gt;***** Full details on how this data were simulated can be viewed [here](https://github.com/leem26/theFUNStudy).&lt;/sup&gt;
+
+---
+class: inverse
+&lt;!--------------------------------------&gt;
+&lt;!-- PLAN FOR TODAY                   --&gt;
+&lt;!--------------------------------------&gt;
+
+# the plan for today
+
+.large[
+1. Introduce the F&amp;Uuml;N Study
+
+1. .largebinv[Relationships between variables]
+
+1. Intro to linear regression
+1. Wrapping up + conclusions
+]
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Relationships                    --&gt;
+&lt;!--------------------------------------&gt;
+
+# relationships between r.v.'s
+
+By now you've probably heard the phrase:
+
+&gt; *correlation does not imply causation" (or something similar).*
+
+But what do we mean by **correlation** in the first place? And why doesn't it imply causation? 
+
+When two variables are **correlated**, we are trying to get at this idea that two variables are **related**. Let's look at how to *quantify* this relationship. 
+
+.center[
+&lt;a href="https://www.tylervigen.com/spurious-correlations"&gt;
+  &lt;img src="staticfigs/funcorrelation.svg" alt="HTML tutorial" style="width:80%;height:80%;"&gt;
+&lt;/a&gt;
+]
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Binary Relationships             --&gt;
+&lt;!--------------------------------------&gt;
+
+# the simple 2x2
+
+When we have two variables that are both Bernoulli distributed (i.e. they take on values of **0** or **1** only), the easiest thing we can do is draw up a 2x2 contingency table. Going back to our FUN study example, we can count how many students (recall your set notation!):
+1. Got ≥8 hours of sleep and used FDS ≥50% of the week 
+  - (`A.bin` = 1 `\(\cap\)` `Y.bin` = 1)
+1. Got ≥8 hours of sleep and did not use FDS 50% of the week 
+  - (`A.bin` = 1 `\(\cap\)` `Y.bin` = 0)
+1. Got &lt;8 hours of sleep and did not use FDS 50% of the week
+  - (`A.bin` = 0 `\(\cap\)` `Y.bin` = 1)
+1. Got &lt;8 hours of sleep and used FDS ≥50% of the week
+  - (`A.bin` = 0 `\(\cap\)` `Y.bin` = 0)
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Binary Relationships 2           --&gt;
+&lt;!--------------------------------------&gt;
+
+# the simple 2x2
+
+Thankfully, we can do this easily in `R`, rather than going through every row of the data and tallying things up 
+
+
+
+
+```r
+xtabs(~Y.bin + A.bin, data = big.FUN)
+```
+
+```
+##      A.bin
+## Y.bin    0    1
+##     0 7022 1797
+##     1 1151   30
+```
+
+We can use this information to calculate the **prevalence ratio**, comparing the prevalence of ≥50% FDS use between those who got 8 hours of sleep to those who did not:  
+
+`\begin{align*}
+PR &amp;= \frac{P(\texttt{Y.bin} = 1 \mid \texttt{A.bin} = 1)}{P(\texttt{Y.bin} = 1 \mid \texttt{A.bin} = 0)}\\
+PR &amp;= \frac{30}{1827} \bigg/ \frac{1151}{8173} = 0.117
+\end{align*}`
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Binary Relationships 2           --&gt;
+&lt;!--------------------------------------&gt;
+
+# the simple 2x2
+
+`\begin{align*}
+PR &amp;= \frac{30}{1827} \bigg/ \frac{1151}{8173} = 0.117
+\end{align*}`
+
+What does this mean? 
+&gt; This suggests that the **proportion** of students who used FDS for ≥50% of their weekly meals among those who **got at least 8 hours** of sleep was .largeb[88.3%] lower than the **proportion** of students who used FDS for ≥50% of their weekly meals among those who **got less than 8 hours** of sleep. 
+
+&lt;br&gt; 
+In other words, those who get at least 8 hours of sleep appear to be **much** less likely to use food delivery services for more than half of their weekly meals. 
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Binary Relationships 3           --&gt;
+&lt;!--------------------------------------&gt;
+
+# the simple 2x2
+
+.pull-left[
+&lt;br&gt;
+&lt;br&gt;
+![](https://media.giphy.com/media/3ohzAt5QiHvIYcMI4o/giphy.gif)
+]
+
+.pull-right[
+Other statistics you might be familiar with that are often used to assess relationships between two Bernoulli random variables are:
+- Odds ratios
+- Risk ratios
+- Hazard ratios
+- Risk differences
+
+Each has its own interpretation, you will learn more about each one in **PHS 2000A** and **EPI 201/202**! 
+]
+
+
+---
+class: inverse, center, middle
+&lt;!--------------------------------------&gt;
+&lt;!-- But what about                   --&gt;
+&lt;!--------------------------------------&gt;
+
+## But what about continuous variables?
+
+i.e. you .largebinv[still] haven't told me what correlation is yet
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Covariance                       --&gt;
+&lt;!--------------------------------------&gt;
+
+# covariance 
+
+When we have two continuous random variables `\(X\)` and `\(Y\)`, one statistic we can use to assess their relationship is their **covariance**:
+
+&lt;br&gt;
+`$$\text{Cov}(X,Y)=\mathbb{E}\left[X-E(X)\right] \times \mathbb{E}\left[Y-E(Y)\right]$$`
+
+&lt;br&gt;
+This measures the tendency of two random variables to“move together”. If they tend to move in similar directions, the covariance is **positive**. If they tend to move in opposite directions, it’s **negative**.
+
+&lt;br&gt;
+In other words, the covariance answers the multi-part question: How variable is `\(X\)`? How variable is `\(Y\)`? Does variation in `\(X\)` increase as variation in `\(Y\)` increases? Is `\(X\)` more variable when `\(Y\)` is more variable?  
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Covariance geometry              --&gt;
+&lt;!--------------------------------------&gt;
+# covariance 
+
+Another way to understand what the covariance represents is with a plot. Returning to our FUN study example, let's examine the relationship between the hours slept last night (`A.con`) and the number of times food delivery services were used that week (`Y.con`), both as continuous variables.  
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Covariance geometry              --&gt;
+&lt;!--------------------------------------&gt;
+# covariance 
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /&gt;
+
+We'll start by simply looking at a scatter plot with sleep hours on the x-axis and FDS use on the y-axis. Here, we've taken a small random sample of 50 students so we can see what's going on more clearly. 
+
+---
+# covariance 
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
+
+Now we've added dashed lines representing the **mean** hours of sleep and the **mean** FDS use across these 50 students. 
+
+---
+# covariance 
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
+
+If we draw vertical and horizontal lines between each point and these dashed mean lines, we get a series of rectangles where each rectangle's height is **(Y.con - E(Y.con))** and each rectangle's width is **(A.con - E(A.con))**. 
+
+---
+# covariance 
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
+
+Multiplying these together, we'll get the area of each rectangle, that is: **(Y.con - E(Y.con)) (A.con - E(A.con))**. Some rectangles will have negative areas (blue) and others will have positive areas (pink). 
+
+---
+# covariance 
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+
+Once we add all these areas up and divide by the number of rectangles (i.e. obtain the mean of the areas), we get the quantity **E[(Y.con - E(Y.con)) (A.con - E(A.con))]**, which is (suprise), the expression we saw for the **population covariance**!
+
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Covariance 2                     --&gt;
+&lt;!--------------------------------------&gt;
+# covariance 
+
+&lt;br&gt; 
+&lt;br&gt;
+&lt;br&gt; 
+&lt;br&gt;
+**Question**: Imagine you have 1 million observations of `\(X\)` and 1 million observations of `\(Y\)`, but all values of `\(X\)` are the same and all values of `\(Y\)` are the same. What's the covariance between `\(X\)` and `\(Y\)`?
+
+&lt;br&gt;
+--
+.center[
+i.e. We can't study the relationship between two variables **when either variable doesn't vary** (or in practice varies very little). If we want to design a study to look at this relationship, we need to keep this in mind! 
+]
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Covariance 3                     --&gt;
+&lt;!--------------------------------------&gt;
+# covariance --&gt; correlation
+
+Why would we use the covariance to quantify relationships?
+
+--
+  - `\(\text{Cov}(X,Y)\)` is a constant
+  - `\(\text{Cov}(X,Y)\)` is symmetric, so `\(\text{Cov}(X,Y) = \text{Cov}(Y,X)\)`
+  - `\(\text{Cov}(X,X) = \text{Var}(X)\)`
+
+--
+
+Why **wouldn't** we use the covariance to quantify relationship?
+
+--
+  - `\(\text{Cov}(X,Y)\)` is sensitive to the scale of the random variables (e.g. think transformations of age or time). 
+  - Therefore, it doesn't really provide us with useful information on the **strength** of relationships -- is the covariance large because the relationship is strong or because of the scale of your variables?
+  - `\(\text{Cov}(X,Y)\)` isn't all that easily interpreted! 
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation                      --&gt;
+&lt;!--------------------------------------&gt;
+# correlation
+
+Let's fix this scaling issue of the covariance by dividing it by the standard deviations of our random variables. This is called the **correlation**! 
+
+$$ \rho_{X,Y} = \frac{\text{Cov(X,Y)}}{\sqrt{\text{Var}(X)}\sqrt{\text{Var}(Y)}}$$
+
+
+
+--
+
+Unlike the covariance, the correlation `\(\rho\)` is:
+- **Not** sensitive to scale, and is bounded between -1 and 1
+- **Does** tell us about the strength of the relationship
+- **More intuitive**, the correlation between a r.v. with itself is `\(\rho_{X,X} = 1\)`
+  
+  
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation Geometry             --&gt;
+&lt;!--------------------------------------&gt;
+# correlation 
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /&gt;
+
+
+Let's use some geometry again to help illustrate what the **correlation** measures. Recall our plot of the covariance as a series of rectangles
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation Geometry             --&gt;
+&lt;!--------------------------------------&gt;
+# correlation 
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
+
+
+The standard deviation of our `A.con` or `Y.con` variable is the average distance between each point and their group means. 
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation Geometry             --&gt;
+&lt;!--------------------------------------&gt;
+# correlation 
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" /&gt;
+
+
+The correlation is then the average area of each rectangle **divided by the product of the lengths** of the two red bars. 
+
+**Question**: Why does this solve the scaling issue?
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation                      --&gt;
+&lt;!--------------------------------------&gt;
+# correlation 
+
+.pull-left[
+.largeb[Great!!] Now we can say that (1) the hours of sleep a student gets is inversely correlated with food delivery service use, and (2) that this relationship is moderately strong&lt;sup&gt;**&lt;/sup&gt;
+
+But what if in actuality, students were more likely to use FDS when they slept **both** very little and a lot? This plot might look like:
+
+]
+
+--
+
+.pull-right[
+&lt;img src="slides_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation                      --&gt;
+&lt;!--------------------------------------&gt;
+# correlation 
+
+Clearly, these two variables are related. This demonstrates another limitation of the correlation, which is that `\(\rho\)` is only useful in cases where the relationships between random variables is **linear**. 
+
+--
+
+Second, correlations are often not meaningful for public health practice. They don't tell us anything about how **much** of a change in one variable is related to a change in another variable. 
+
+- For example, I could tell you that sleep hours is related to FDS use with a correlation of -0.498, but I wouldn't be able to tell you the actual decrease in FDS use for every additional hour of sleep a student got. 
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+# correlation, maybe causation?  
+
+Another limitation of these methods (2x2 tables, covariance, correlation), is when we are interested in not only the **relationship** between two random variables, but the **effect** one has on another. 
+
+
+--
+Remember our true data-generating process for the FUN study? 
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" /&gt;
+
+--
+In reality, .largeb[sleep doesn't have any effect on food delivery service at all,] even though our calculations of the prevalence ratio, covariance, and correlation would lead us to believe otherwise.  
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+# correlation, maybe causation?  
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+
+
+Why is this the case? Both sleep and FDS use are **affected** by a third variable `W`, which is an indicator of whether a student is currently writing their dissertation. Those that are dissertating are more likely to order delivery and less likely to get a full night's sleep. In other words, dissertation-writing status is a **confounder** of the sleep-FDS use relationship. 
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+# correlation, maybe causation?  
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+
+
+If we don't account for this **confounding** in an analysis, our estimates will (usually) be spurious! Another way to think of this: 
+&gt; **Disseration status** (`W`) is actually driving changes in **food delivery service use**. (`Y`) **Sleep hours** (`A`) might be a proxy for disseration status, so when we look at the relationship between sleep and FDS without considering dissertation writing, we see an association. However, we would be wrong to say that **sleep hours** itself causes FDS use. 
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+# correlation, maybe causation?  
+
+But now what? How do we move forward in the face of confounding? 
+
+  - One option is to re-calculate our estimates of association (e.g. PR, covariance, correlation) **within** strata of our confounder. For example:
+      
+  
+  ```r
+  cor(big.FUN$A.con[big.FUN$W==1], big.FUN$Y.con[big.FUN$W==1])
+  ```
+  
+  ```
+  ## [1] 0.00291325
+  ```
+  
+  ```r
+  cor(big.FUN$A.con[big.FUN$W==0], big.FUN$Y.con[big.FUN$W==0])
+  ```
+  
+  ```
+  ## [1] 0.01592148
+  ```
+  
+These are not exactly equal due to random noise, but both suggest little (if any) correlation between `A` and `Y` on the continuous scale. And they are both significantly different than our initial estimate of the correlation, which was -0.498!  
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+# correlation, maybe causation?  
+
+However, let's say we have not just one, but .largeb[20+] different confounders. Unless we have [millions and millions](https://www.youtube.com/watch?v=u_aLESDql1U) of observations, there's no way we could look at the the relationships between variables in all of the (potentially infinite) number of strata. This is sometimes called the **curse of dimensionality**. 
+
+
+&lt;br&gt;
+
+--
+We will see how **regression** provides us with one way to move forward in the face of high-dimensional data. 
+
+
+&lt;br&gt;
+--
+But first, let's take a breather! 
+
+
+.pull-right[
+&lt;div style="margin-top:-60px;"&gt;
+&lt;img src = https://media.giphy.com/media/BbBYfhduY1u3m/giphy.gif&gt;
+&lt;/div&gt;
+
+]
+
+---
+class: inverse center middle
+&lt;!--------------------------------------&gt;
+&lt;!-- Pause for Questions              --&gt;
+&lt;!--------------------------------------&gt;
+
+# Questions?
+
+## Complete this `R` exercise on correlation and covariance [here](https://phs-summr2020.netlify.app/regressionex1/)
+
+
+
+---
+class: inverse
+&lt;!--------------------------------------&gt;
+&lt;!-- PLAN FOR TODAY                   --&gt;
+&lt;!--------------------------------------&gt;
+
+# the plan for today
+
+.large[
+1. Introduce the F&amp;Uuml;N Study
+
+1. Relationships between variables
+
+1. .largebinv[Intro to linear regression]
+1. Wrapping up + conclusions
+]
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# linear regression
+
+**Linear regression** is a method that allows us to use data efficiently and flexibly to quantify relationships between random variables. For a research question of interest, there are a number of steps we can take to reach a conclusion:
+
+--
+
+1. Specify a causal model (how does the world work?)
+
+--
+1. Connect observed data to causal model (how do my data work?)
+
+--
+1. Translate our research question into a mathematical expression and statistical estimand (odds ratio? risk difference?)
+
+--
+1. Identify what assumptions we need to make to answer this research question (do I need to adjust for a, b, or c?)
+
+--
+1. Propose a statistical model and estimate parameters
+
+--
+1. Interpret
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# linear regression
+
+**Linear regression** is a method that allows us to use data efficiently and flexibly to quantify relationships between random variables. For a research question of interest, there are a number of steps we can take to reach a conclusion:
+1. **Specify a causal model (how does the world work?)**
+1. **Connect observed data to causal model (how do my data work?)**
+1. **Translate our research question into a mathematical expression and statistical estimand (odds ratio? risk difference?)**
+1. **Identify what assumptions we need to make to answer this research question (do I need to adjust for a, b, or c?)**
+1. Propose a statistical model and estimate parameters
+1. **Interpret**
+
+&lt;br&gt;
+
+**This is what your subject-matter knowledge helps with!**
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# linear regression
+
+**Linear regression** is a method that allows us to use data efficiently and flexibly to quantify relationships between random variables. For a research question of interest, there are a number of steps we can take to reach a conclusion:
+1. Specify a causal model (how does the world work?)
+1. Connect observed data to causal model (how do my data work?)
+1. Translate our research question into a mathematical expression and statistical estimand (odds ratio? risk difference?)
+1. Identify what assumptions we need to make to answer this research question (do I need to adjust for a, b, or c?)
+1. **Propose a statistical model and estimate parameters**
+1. Interpret
+
+&lt;br&gt;
+
+**This is what linear regression can help us with!** We will discuss steps **3., 5., and 6.** (and come back to **4.**)
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# linear regression
+
+Today, we will discuss linear regression in the context of **two continuous random variables**, but over the course of this semester we will also learn what to do with discrete, time-to-event, and Bernoulli variables. 
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Question                         --&gt;
+&lt;!--------------------------------------&gt;
+
+# 3. question of interest
+
+Let's look at our FUN study example again, plotting sleep time against delivery service use. This time, we'll take a random sample of 500 students from the 100,000. 
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+
+We might be interested in the question: **For every additional hour of sleep a student gets per night, what is the absolute change in food delivery service use on average?** Neither correlation or covariance directly answers this question
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 3. question of interest
+
+Let's translate this quantity into math: **For every additional hour of sleep a student gets per night, what is the absolute change in food delivery service use on average**
+
+
+--
+
+Let `\(X\)` represent any arbitrary number of hours of sleep per night. Let `\(Y\)` represent any arbitrary number of food delivery service uses per week. In other words, we want to know how the mean of `\(Y\)` changes given a 1 unit increase in `\(X\)`. This is our **target estimand**
+
+&lt;br&gt;
+--
+.largeb[$$ E(Y \mid X = (x + 1)) - E(Y \mid X = x)$$]
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5a. statistical model
+
+In order to relate these two variables, we need to map our change in `\(X\)` to our change in `\(E(Y)\)`, making some assumption about their relationship. This is where we have a choice! 
+
+$$ (X + 1) - (X) \overset{?}{\mapsto} \Delta E(Y)$$
+
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5a. statistical model
+
+Let's assume for simplicity that the relationship between `\(E(Y)\)` and `\(X\)` is **a straight line**. Then our *statistical model* relating mean FDS use and hours of sleep can be written as:
+
+$$ E(Y \mid X = x) = \beta_0 + \beta_1 X$$
+
+--
+
+This isn't really anything new -- it's the same as:
+`\begin{align*}
+  y &amp;= mx + b \\
+  y &amp;= b + mx \\
+  E(FDS \mid Sleep Hours) &amp;= \beta_0 + \beta_1 (Sleep Hours)
+\end{align*}`
+
+Which you've probably seen already in other classes. The main point here is that this statistical model encodes an assumption that the relationship between mean FDS use to hours of sleep is governed by an **intercept** and a **slope**. 
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5a. statistical model
+
+But how is this statistical model related to our question of interest? **For every additional hour of sleep a student gets per night, what is the absolute change in food delivery service use on average**?
+
+.largeb[$$ E(Y \mid X = (x + 1)) - E(Y \mid X = x)$$]
+
+--
+
+Well, we know that for any arbitrary value of `\(X = x\)`, the expected value of `\(Y\)` according to our model is 
+`$$E(Y \mid X = x) = \beta_0 + \beta_1 x \tag{1}$$`
+
+And for the next value `\(X = x+1\)`, we can substitute `\((x+1)\)` into this expression:
+$$E(Y \mid X = (x + 1)) = \beta_0 + \beta_1 (x + 1) \tag{2} $$
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5a. statistical model
+
+If we subtract equation (1) from equation (2), we get:
+`\begin{align*}
+  E(Y \mid X = (x + 1)) - E(Y \mid X = x) &amp;=  \beta_0 + \beta_1 (x + 1)\\
+  &amp; \  - (\beta_0 + \beta_1 x) \\
+  &amp;= \boxed{\beta_1}
+\end{align*}`
+
+--
+
+**Which shows us that what we're interested in: the change in mean food delivery service use for a 1 hour increase in hours of sleep, is simply given by `\(\beta_1\)`, or the slope, from this statistical model! **
+
+
+--
+Given our data, the next question is how exactly to **estimate** `\(\beta_1\)`. In other words, what's the most likely value of the slope relating mean FDS to sleep hours, considering what we actually observe?
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5b. estimation
+
+The most common way to estimate parameters from a linear model like the one we've specified in our statistical model is an algorithm called **ordinary least squares (OLS)**. 
+
+&gt; Aside: naming conventions in statistics can be weird. **Least squares: ** based on the mechanism of the algorithm. **Ordinary: ** less complicated than methods developed later chronologically. 
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5b. estimation
+
+Let's look at the steps in the OLS algorithm:
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
+
+1. Pick a line, any line, by defining candidate values of `\(\beta_0\)` and `\(\beta_1\)`
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5b. estimation
+
+Let's look at the steps in the OLS algorithm:
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-20-1.png" style="display: block; margin: auto;" /&gt;
+
+&lt;ol start = 2&gt;
+&lt;li&gt; Calculate the difference between the observed points and the value of E(Y) predicted by our candidate model, and square it.  
+&lt;/ol&gt;
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5b. estimation
+
+Let's look at the steps in the OLS algorithm:
+
+.center[
+&lt;img src="staticfigs/ols.gif" style="width:67%;height:50%;"&gt;
+]
+ 
+&lt;ol start = 3&gt;
+&lt;li&gt; Find the combination of intercept and slope that &lt;b&gt;minimizes the average of the squared distances&lt;/b&gt;
+&lt;/ol&gt;
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5b. estimation
+
+When we only have two variables, it turns out the OLS solution to our question: **what is the most likely slope given the data I observe** is given by:
+
+`$$\widehat{\beta_1} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n(x_i - \bar{x})^2}$$`
+
+If we divide both the numerator by `\(n-1\)`, we have:
+
+`$$\widehat{\beta_1} = \frac{\frac{1}{n-1}\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\frac{1}{n-1}\sum_{i=1}^n(x_i - \bar{x})^2}$$`
+
+Which is **cool** because:
+
+`\(\frac{1}{n-1}\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})\)`:  the sample covariance between `\(X\)` and `\(Y\)`
+
+`\(\frac{1}{n-1}\sum_{i=1}^n(x_i - \bar{x})^2\)`: the sample variance of `\(X\)`. 
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5b. estimation
+
+Let's do this with the FUN dataset in `R` to illustrate: 
+
+
+
+
+.tiny[
+
+```r
+ols.fit &lt;- lm(Y.con ~ A.con, data = big.FUN)
+summary(ols.fit)
+
+Call:
+lm(formula = Y.con ~ A.con, data = big.FUN)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-9.0173 -2.3592 -0.3798  2.2430 11.2263 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 11.53031    0.11610   99.31   &lt;2e-16 ***
+*A.con       -0.98526    0.01761  -55.95   &lt;2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.145 on 9998 degrees of freedom
+Multiple R-squared:  0.2385,	Adjusted R-squared:  0.2384 
+F-statistic:  3131 on 1 and 9998 DF,  p-value: &lt; 2.2e-16
+```
+]
+
+--
+
+The estimated line according to OLS is therefore given by: `$$E(Y \mid X=x)=11.53-0.99(X)$$`
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 5b. estimation
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-23-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+
+# 6. interpretation
+
+How do we interpret this? Remember that our research question, **for every additional hour of sleep a student gets per night, what is the absolute change in food delivery service use on average**?, is represented by the expression `\(E(Y \mid X = (x + 1)) - E(Y \mid X = x)\)`, which we determined was equal to `\(\beta_1\)` according to our statistical model. 
+
+
+--
+
+We used OLS to estimate the intercept and slope parameters, and found that `\(\widehat{\beta_1} = -0.99\)`
+
+--
+
+Working backwards using this logic, then, we can conclude that **for every additional hour of sleep a student gets per night, food delivery service decreases by 0.99 times per week on average.** 
+
+
+---
+class: inverse
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+## beta estimation, maybe causation?  
+
+.pinkbinv[But wait!] Remember our true data-generating process for the FUN study. In reality, sleep hours .largebinv[does not] affect delivery service use. 
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-24-1.png" style="display: block; margin: auto;" /&gt;
+
+We have the same issue of confounding, just as we did when calculating the prevalence ratio, covariance, and correlation! Linear regression .largebinv[doesn't magically solve these issues]
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+## beta estimation, maybe causation?  
+
+However, it does help us move forward **more efficiently.** While we could just as easily re-run our regression models within strata of our covariate (dissertation writing status) another solution is to simply **include this confounder as a covariate** in our statistical model.  
+
+--
+
+Instead of our previous model:
+$$E(Y \mid X = x) = \beta_0 + \beta_1 x $$
+
+--
+
+We can include dissertation writing status (let's call it `\(W\)`) into the mix:
+$$E(Y \mid X = x, W = w) = \beta_0 + \beta_1 x + \beta_2 w $$
+
+
+--
+
+What new assumption does this encode? 
+
+--
+
+**Mean FDS use per week is a function of sleep hours and/or dissertation writing, or neither**
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+## beta estimation, maybe causation?  
+
+Linear regression, compared to correlation and covariance, is:
+  - **Flexible:** 
+    - I can add 1, 10, or 50 covariates (assuming I have the data)
+    - I can easily change my assumptions about the functional form of relationships between variables (e.g. line? curve? other?)
+  - **Efficient:** When the data are sparse, I can borrow information from neighboring observations (this is **particularly** helpful when we have multiple continuous explanatory variables)
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-25-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Correlation, causation?          --&gt;
+&lt;!--------------------------------------&gt;
+## beta estimation, maybe causation?  
+
+We can fit an updated model, with dissertation status, in `R`:
+
+.tiny[
+
+```r
+ols.fit2 &lt;- lm(Y.con ~ A.con + W, data = big.FUN)
+summary(ols.fit2)
+
+Call:
+lm(formula = Y.con ~ A.con + W, data = big.FUN)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-5.3039 -1.0379 -0.0136  1.0038  6.5108 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  2.90385    0.07199   40.34   &lt;2e-16 *** 
+*A.con        0.01151    0.00992    1.16    0.246 
+*W            7.01219    0.03774  185.81   &lt;2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1.49 on 9997 degrees of freedom
+Multiple R-squared:  0.829,	Adjusted R-squared:  0.829 
+F-statistic: 2.423e+04 on 2 and 9997 DF,  p-value: &lt; 2.2e-16
+```
+]
+
+This gives us the right answer: **There is no relationship between sleep hours and food delivery service use independent of dissertation writing status**
+
+
+---
+class: inverse center middle
+&lt;!--------------------------------------&gt;
+&lt;!-- Pause for Questions              --&gt;
+&lt;!--------------------------------------&gt;
+
+# Questions?
+
+## Complete this `R` exercise on regression basics [here](https://phs-summr2020.netlify.app/regressionex2/)
+
+
+---
+class: inverse
+&lt;!--------------------------------------&gt;
+&lt;!-- PLAN FOR TODAY                   --&gt;
+&lt;!--------------------------------------&gt;
+
+# the plan for today
+
+.large[
+1. Introduce the F&amp;Uuml;N Study
+
+1. Relationships between variables
+
+1. Intro to linear regression
+1. .largebinv[Wrapping up + conclusions]
+]
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+# 4. identify assumptions needed
+
+Linear regression allows to relate one random variable to another. If we're interested in **causal** relationships, i.e.:
+
+--
+
+&gt; For every additional hour of sleep a student gets per night, what is the absolute change in food delivery service use on average?
+
+.center[vs.]
+
+--
+
+&gt; If students sleep an additional hour per night, what is the absolute change in food delivery service use compared to if students did not sleep an additional hour per night? 
+
+--
+
+Then we need to think carefully about what covariates we need to adjust for (i.e. include in our regression model) in order to **isolate** the effect of sleeping on food delivery service use. 
+
+---
+&lt;!--------------------------------------&gt;
+&lt;!-- Linear Regression                --&gt;
+&lt;!--------------------------------------&gt;
+# 4. identify assumptions needed
+
+
+&lt;br&gt; 
+&lt;br&gt; 
+&lt;br&gt; 
+
+This is to say that linear regression, like correlation or covariance or other methods, is just a **tool** we can use to answer questions. But these tools can be mis-used and without the proper subject matter knowledge, can lead us astray. 
+
+.center[.largeb[i.e. regression is dumb, you are not!]]
+
+
+---
+class: inverse right
+background-image: url(https://hdwallsource.com/img/2014/8/festival-background-38168-39042-hd-wallpapers.jpg)
+background-size:cover
+&lt;!--------------------------------------&gt;
+&lt;!-- You made it!                     --&gt;
+&lt;!--------------------------------------&gt;
+
+# you made it!  
+
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+.largebinv[You are here for a reason!]
+
+.largebinv[You can learn!]
+
+.largebinv[You are capable!]
+
+.largebinv[We believe in you!]
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

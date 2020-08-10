@@ -1,0 +1,45 @@
+ul {
+  list-style: none; /* Remove default bullets */
+}
+
+ul li::before {
+  content: "\2023";  /* Add content: \2022 is the CSS Code/unicode for a bullet */
+  color: #5FB0EF; /* Change the color */
+  font-weight: bold; /* If you want it to be bold */
+  display: inline-block; /* Needed to add space between the bullet and the text */ 
+  width: 1em; /* Also needed for space (tweak if needed) */
+  margin-left: -1em; /* Also needed for space (tweak if needed) */
+  margin-bottom: 0;
+  margin-top: 0.5em;
+}
+
+
+
+/* custom large font size */
+.large { font-size: 130% }
+.largeb { 
+  font-size: 130%;
+  font-weight: bold;
+  color: #5FB0EF;
+}
+.largebinv { 
+  font-size: 130%;
+  font-weight: bold;
+  color: #FFFFFF;
+}
+
+.pinkbinv {
+  font-size: 150%;
+  font-weight: bold;
+  color: #FFDFE9;
+}
+.midemph .moreweightUpper {
+  text-transform: uppercase;
+  font-weight: 900;
+  color:#FFDFE9;
+  font-size: 2.2rem;
+}
+
+.tiny .remark-code { 
+  font-size: 65% !important;
+}
