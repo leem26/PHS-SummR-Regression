@@ -191,7 +191,7 @@ A note: our outcome `Y.con` is continuous, rather than discrete, to take into ac
 Suppose that we actually know the **true** relationships between these variables and how they were generated in the population. Specifically:
 
 <br>
-```{r, echo=FALSE, fig.align="center", fig.height=3, fig.width=6, warning=FALSE, message=FALSE}
+```{r, echo=FALSE, fig.align="center", fig.height=3, fig.width=4, warning=FALSE, message=FALSE}
 library(ggdag)
 library(dagitty)
 dag <- dagitty("dag{Y <- W -> A}")
@@ -698,7 +698,7 @@ ggplot(big.100, aes(x = A.con, y = Y.con)) +
 ```
 
 
-The standard deviation of our `A.con` or `Y.con` variable is the average distance between each point and their group means. 
+The standard deviation of our `A.con` or `Y.con` variable is the average deviation between each point and their group means, i.e.  $\sigma = \sqrt{\frac{\sum_{i=1}^n (x - \bar{x})^2}{n}}$, and is on the **original scale** of the variable
 
 ---
 <!-------------------------------------->
@@ -1414,7 +1414,7 @@ class: inverse
 
 .pinkbinv[But wait!] Remember our true data-generating process for the FUN study. In reality, sleep hours .largebinv[does not] affect delivery service use. 
 
-```{r, echo=FALSE, fig.align="center", fig.height=3, fig.width=6, warning=FALSE, message=FALSE}
+```{r, echo=FALSE, fig.align="center", fig.height=3, fig.width=4, warning=FALSE, message=FALSE}
 library(ggdag)
 library(dagitty)
 dag <- dagitty("dag{Y <- W -> A}")
