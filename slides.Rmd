@@ -1,7 +1,7 @@
 ---
 title: "*PHS Summer Camp 2020*"
 subtitle: "Relationships and Regression"
-author: "Matthew Lee <br><br>Harvard University"
+author: "Matthew Lee <br><br>Harvard University <br><br><br>https://phs-summr2020.netlify.app/regressionslides/slides.html#1"
 output:
   xaringan::moon_reader:
     lib_dir: libs
@@ -1482,7 +1482,7 @@ ggplot(big.500, aes(x = A.con, y = Y.con)) +
   geom_rect(aes(xmin = 10.3, ymin = 0, xmax = 10.9, ymax = 100), 
             fill = "#5FB0EF", alpha = 0.01) + 
   geom_point(shape = 21, size = 0.6, fill = "NA", color = "black", alpha = 0.6) + 
-  labs(x = "Hours of sleep", y = "FDS Use (times/week)") +
+  labs(x = "Hours of sleep", y = "FDS Use") +
   geom_smooth(method = "lm", se = FALSE, color = "royalblue4", size=0.4) + 
   theme_xaringan(text_font_size = 10, title_font_size = 10) + 
   coord_cartesian(ylim = c(0, 16), xlim = c(0, 12)) 
