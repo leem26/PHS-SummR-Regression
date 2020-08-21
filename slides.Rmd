@@ -52,6 +52,22 @@ style_duo_accent(
 )
 ```
 
+class: inverse
+
+# submit panel questions
+
+Please use the link below to submit anonymous questions for the student panel this afternoon, no later than 1pm EST today if possible! 
+
+<br>
+<br>
+
+<h1>
+.center[
+[**Submit a question here!**](https://forms.gle/jX9ciADzb5SSDang8) 
+]
+</h1>
+
+---
 <!-------------------------------------->
 <!-- REVIEW                           -->
 <!-------------------------------------->
